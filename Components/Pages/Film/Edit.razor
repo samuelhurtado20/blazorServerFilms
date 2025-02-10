@@ -1,0 +1,47 @@
+﻿@page "/film/edit/{id:int}"
+@inject NavigationManager NavigationManager;
+@inject IFilmService FilmService
+@rendermode InteractiveServer
+
+<h3>Edit</h3>
+
+<button class="btn btn-dark" @onclick="@(()=> NavigationManager.NavigateTo("/film/list"))">Go Back</button>
+<EditForm Model="@film" OnSubmit="@Save" FormName="add">
+    <div class="row">
+        <div class="col-4 form-group">
+            <label for="title" class="col-form-label"> Title</label>
+            <InputText id="title" @bind-Value="@film.Title" required class="form-control" />
+        </div>
+        <div class="col form-group">
+            <label for="year" class="col-form-label">Year</label>
+            <InputNumber id="year" @bind-Value="@film.Year" min="0" required class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="director" class="col-form-label">Director</label>
+        <InputTextArea id="director" @bind-Value="@film.Director" required class="form-control"></InputTextArea>
+    </div>
+
+    <hr />
+    <button class="btn btn-primary" type="submit">Save</button>
+</EditForm>
+
+@code {
+    Film film = new();
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //var id = Convert.ToInt32(NavigationManager.Uri.Split('/').Last());
+        film = await FilmService.GetFilmAsync(Id);
+    }
+
+    private async Task Save()
+    {
+        await FilmService.UpdateFilmAsync(film);
+        NavigationManager.NavigateTo("/film/list");
+    }
+
+}

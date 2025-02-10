@@ -1,0 +1,62 @@
+﻿@page "/film/list"
+@inject IFilmService FilmService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime;
+
+
+<h3>List</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Year</th>
+            <th>Director</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var film in films)
+        {
+            <tr>
+                <td>@film.Title</td>
+                <td>@film.Year</td>
+                <td>@film.Director</td>
+                <td><a href="/film/edit/@film.Id">Edit</a></td>
+                <td>
+                    <button title="Delete" class="btn btn-danger btn-delete" @onclick="@(() => Delete(film))">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    List<Film> films = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetFilms();
+    }
+
+    private async Task GetFilms()
+    {
+        var result = await FilmService.GetFilmsAsync();
+        films = result.ToList() ?? new List<Film>();
+    }
+
+    private async Task Delete(Film film)
+    {
+        var result = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete this film ({film.Title})?");
+        if (result)
+        {
+            await FilmService.DeleteFilmAsync(film.Id);
+
+            StateHasChanged();
+        }
+    }
+
+}
